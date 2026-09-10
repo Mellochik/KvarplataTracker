@@ -178,6 +178,7 @@ async function save() {
   try {
     if (editingId.value) {
       await api.updateReading(editingId.value, {
+        period: form.value.period,
         hws_value: form.value.hws_value,
         cws_value: form.value.cws_value,
         electric_value: form.value.electric_value,

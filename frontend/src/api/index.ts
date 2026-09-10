@@ -72,7 +72,7 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
-  updateReading: (id: number, data: { hws_value: number; cws_value: number; electric_value: number }) =>
+  updateReading: (id: number, data: { period: string; hws_value: number; cws_value: number; electric_value: number }) =>
     request<Reading>(`/readings/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

@@ -68,12 +68,18 @@ async def create_reading(payload: ReadingCreate, db: AsyncSession = Depends(get_
 @router.put(
     "/{reading_id}",
     response_model=ReadingRead,
-    description="Обновить показания счётчиков (поля ГВС, ХВС и электроэнергии) по идентификатору записи.",
+    description="Обновить показания счётчиков (период, поля ГВС, ХВС и электроэнергии) по идентификатору записи.",
     responses={
         404: {
             "description": "Запись показаний с указанным идентификатором не найдена",
             "content": {"application/json": {"example": {"detail": "Reading not found"}}},
-        }
+        },
+        409: {
+            "description": "Показания за указанный период уже существуют",
+            "content": {
+                "application/json": {"example": {"detail": "Reading for 2024-12-01 already exists"}}
+            },
+        },
     },
 )
 async def update_reading(reading_id: int, payload: ReadingUpdate, db: AsyncSession = Depends(get_db)):
@@ -81,6 +87,13 @@ async def update_reading(reading_id: int, payload: ReadingUpdate, db: AsyncSessi
     reading = result.scalar_one_or_none()
     if not reading:
         raise HTTPException(status_code=404, detail="Reading not found")
+
+    if payload.period != reading.period:
+        existing = await db.execute(
+            select(Reading).where(Reading.period == payload.period, Reading.id != reading_id)
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=409, detail=f"Reading for {payload.period} already exists")
 
     for key, value in payload.model_dump().items():
         setattr(reading, key, value)

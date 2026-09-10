@@ -36,6 +36,7 @@ class ReadingCreate(BaseModel):
 class ReadingUpdate(BaseModel):
     """Данные для обновления показаний счётчиков."""
 
+    period: date = Field(description="Расчётный период (месяц), должен быть уникальным")
     hws_value: float = Field(ge=0, description="Показание счётчика горячей воды (ГВС)")
     cws_value: float = Field(ge=0, description="Показание счётчика холодной воды (ХВС)")
     electric_value: float = Field(ge=0, description="Показание счётчика электроэнергии")
