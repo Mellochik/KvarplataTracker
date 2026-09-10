@@ -90,75 +90,36 @@
 
       <div class="card chart-card">
         <h2>Сумма по месяцам</h2>
-        <div v-if="chartPoints.length" class="chart-box">
-          <svg
-            :viewBox="`0 0 ${CHART_W} ${CHART_H}`"
-            class="chart-svg"
-            role="img"
-            aria-label="График изменения суммарной оплаты квартиры по месяцам"
-          >
-            <defs>
-              <linearGradient id="chartAreaFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#6366f1" stop-opacity="0.18" />
-                <stop offset="1" stop-color="#6366f1" stop-opacity="0" />
-              </linearGradient>
-              <linearGradient id="chartLineGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" stop-color="#6366f1" />
-                <stop offset="1" stop-color="#8b5cf6" />
-              </linearGradient>
-            </defs>
+        <LineChart
+          :points="costPoints"
+          unit="₽"
+          :year="selectedYear"
+          :ariaLabel="'График изменения суммарной оплаты квартиры по месяцам'"
+        />
+      </div>
 
-            <line
-              v-for="g in chartGrid"
-              :key="`grid-${g.y}`"
-              :x1="PAD_LEFT"
-              :x2="CHART_W - PAD_RIGHT"
-              :y1="g.y"
-              :y2="g.y"
-              class="chart-grid"
-            />
-            <text
-              v-for="g in chartGrid"
-              :key="`glabel-${g.y}`"
-              :x="PAD_LEFT - 6"
-              :y="g.y + 4"
-              text-anchor="end"
-              class="chart-axis"
-            >{{ formatCompact(g.value) }}</text>
-
-            <path :d="chartAreaPath" fill="url(#chartAreaFill)" />
-            <path :d="chartLinePath" fill="none" stroke="url(#chartLineGrad)" class="chart-line" />
-
-            <circle
-              v-for="p in chartPoints"
-              :key="p.month"
-              :cx="p.x"
-              :cy="p.y"
-              r="4.5"
-              class="chart-dot"
-              @mouseenter="onPointEnter(p, $event)"
-              @mouseleave="onPointLeave"
-            ></circle>
-            <text
-              v-for="p in chartPoints"
-              :key="`plabel-${p.month}`"
-              :x="p.x"
-              :y="CHART_H - PAD_BOTTOM + 18"
-              text-anchor="middle"
-              class="chart-axis chart-month"
-            >{{ p.month }}</text>
-          </svg>
-
-          <div
-            v-if="tooltip"
-            class="chart-tooltip"
-            :style="{ left: tooltip.x + 14 + 'px', top: tooltip.y + 14 + 'px' }"
-          >
-            <p class="tip-title">{{ tooltip.month }} {{ tooltip.year }}</p>
-            <p class="tip-value">{{ formatMoney(tooltip.value) }} ₽</p>
-          </div>
-        </div>
-        <p v-else class="empty-note">Нет данных для графика за выбранный год</p>
+      <div class="card chart-card">
+        <h2>
+          Расход по месяцам
+          <span class="segmented chart-switch" role="group" aria-label="Выбор коммунальной услуги">
+            <button
+              v-for="r in RESOURCES"
+              :key="r.key"
+              :class="{ active: selectedResource === r.key }"
+              :aria-pressed="selectedResource === r.key"
+              @click="selectedResource = r.key"
+            >{{ r.label }}</button>
+          </span>
+        </h2>
+        <LineChart
+          :points="consumptionPoints"
+          :unit="activeResource.unit"
+          :decimals="activeResource.decimals"
+          :color-from="activeResource.colorFrom"
+          :color-to="activeResource.colorTo"
+          :year="selectedYear"
+          :ariaLabel="`График расхода ${activeResource.fullLabel} по месяцам`"
+        />
       </div>
 
       <div class="card table-card">
@@ -217,6 +178,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { api, type YearSummary } from '../api'
+import LineChart from '../components/LineChart.vue'
 
 const MONTHS_RU = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
 
@@ -271,117 +233,80 @@ const utilitiesTotal = computed(() =>
     : 0
 )
 
-// --- Monthly chart ---
-const CHART_W = 640
-const CHART_H = 280
-const PAD_LEFT = 52
-const PAD_RIGHT = 16
-const PAD_TOP = 16
-const PAD_BOTTOM = 34
-const BASELINE_Y = CHART_H - PAD_BOTTOM
-
-const chartAreaW = computed(() => CHART_W - PAD_LEFT - PAD_RIGHT)
-const chartAreaH = computed(() => CHART_H - PAD_TOP - PAD_BOTTOM)
-
-const monthTotals = computed(() => (summary.value?.months ?? []).map((m) => m.total))
-
-// Scale the y-axis from the data range (plus a little headroom) instead of from 0,
-// so month-to-month differences are actually visible.
-const yMin = computed(() => {
-  const t = monthTotals.value
-  if (!t.length) return 0
-  const mn = Math.min(...t)
-  const mx = Math.max(...t)
-  if (mx === mn) return mn - 1
-  return Math.max(0, mn - (mx - mn) * 0.15)
-})
-const yMax = computed(() => {
-  const t = monthTotals.value
-  if (!t.length) return 1
-  const mn = Math.min(...t)
-  const mx = Math.max(...t)
-  if (mx === mn) return mx + 1
-  return mx + (mx - mn) * 0.1
-})
-const ySpan = computed(() => yMax.value - yMin.value || 1)
-
-const chartPoints = computed(() => {
-  const months = summary.value?.months ?? []
-  const span = ySpan.value
-  const n = months.length || 1
-  const slotW = chartAreaW.value / n
-  return months.map((m, i) => {
-    const x = PAD_LEFT + slotW * i + slotW / 2
-    const y = PAD_TOP + chartAreaH.value - ((m.total - yMin.value) / span) * chartAreaH.value
-    return { x, y, value: m.total, month: MONTHS_RU[new Date(m.period).getMonth()] }
-  })
-})
-
-// <path> accepts M/L commands, unlike <polyline> which only accepts plain coordinate pairs.
-const chartLinePath = computed(() =>
-  chartPoints.value
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
-    .join(' ')
+// --- Charts ---
+const costPoints = computed(() =>
+  (summary.value?.months ?? []).map((m) => ({
+    label: MONTHS_RU[new Date(m.period).getMonth()],
+    value: m.total,
+  }))
 )
 
-const chartAreaPath = computed(() => {
-  const pts = chartPoints.value
-  if (pts.length < 2) return ''
-  const head = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
-  return `${head} L ${pts[pts.length - 1].x} ${BASELINE_Y} L ${pts[0].x} ${BASELINE_Y} Z`
-})
+type ResourceKey = 'hws' | 'cws' | 'electric'
 
-const chartGrid = computed(() => {
-  const lines = []
-  const steps = 4
-  const span = ySpan.value
-  for (let i = 0; i <= steps; i++) {
-    const value = yMin.value + (span / steps) * i
-    const y = PAD_TOP + chartAreaH.value - ((value - yMin.value) / span) * chartAreaH.value
-    lines.push({ y, value })
-  }
-  return lines
-})
+interface ResourceConfig {
+  key: ResourceKey
+  label: string
+  fullLabel: string
+  field: 'hws_consumption' | 'cws_consumption' | 'electric_consumption'
+  unit: string
+  decimals: number
+  colorFrom: string
+  colorTo: string
+}
+
+// Display order and units follow the monthly table below.
+const RESOURCES: ResourceConfig[] = [
+  {
+    key: 'hws',
+    label: 'ХВС',
+    fullLabel: 'холодной воды',
+    field: 'hws_consumption',
+    unit: 'м³',
+    decimals: 2,
+    colorFrom: '#0284c7',
+    colorTo: '#38bdf8',
+  },
+  {
+    key: 'cws',
+    label: 'ГВС',
+    fullLabel: 'горячей воды',
+    field: 'cws_consumption',
+    unit: 'м³',
+    decimals: 2,
+    colorFrom: '#e11d48',
+    colorTo: '#fb7185',
+  },
+  {
+    key: 'electric',
+    label: 'Электро',
+    fullLabel: 'электроэнергии',
+    field: 'electric_consumption',
+    unit: 'кВт·ч',
+    decimals: 0,
+    colorFrom: '#6366f1',
+    colorTo: '#8b5cf6',
+  },
+]
+
+const selectedResource = ref<ResourceKey>('hws')
+const activeResource = computed(
+  () => RESOURCES.find((r) => r.key === selectedResource.value) ?? RESOURCES[0]
+)
+
+const consumptionPoints = computed(() =>
+  (summary.value?.months ?? []).map((m) => ({
+    label: MONTHS_RU[new Date(m.period).getMonth()],
+    value: m[activeResource.value.field],
+  }))
+)
 
 function formatMoney(value: number): string {
   return value.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-function formatCompact(value: number): string {
-  const abs = Math.abs(value)
-  if (abs >= 1000) {
-    return `${(value / 1000).toFixed(abs >= 10000 ? 0 : 1)}k`
-  }
-  return value.toFixed(0)
-}
-
 function formatMonth(period: string): string {
   const date = new Date(period)
   return `${MONTHS_RU[date.getMonth()]} ${date.getFullYear()}`
-}
-
-// Hover tooltip for the chart
-interface ChartTooltip {
-  x: number
-  y: number
-  month: string
-  value: number
-  year: number
-}
-const tooltip = ref<ChartTooltip | null>(null)
-
-function onPointEnter(p: { month: string; value: number; x: number; y: number }, ev: MouseEvent) {
-  tooltip.value = {
-    x: ev.clientX,
-    y: ev.clientY,
-    month: p.month,
-    value: p.value,
-    year: selectedYear.value,
-  }
-}
-
-function onPointLeave() {
-  tooltip.value = null
 }
 
 onMounted(async () => {
@@ -501,78 +426,13 @@ onMounted(async () => {
 }
 
 /* Chart */
-.chart-box {
-  position: relative;
+.chart-card > h2 {
+  flex-wrap: wrap;
 }
 
-.chart-svg {
-  width: 100%;
-  height: auto;
-  display: block;
-  overflow: visible;
-}
-
-.chart-grid {
-  stroke: var(--border);
-  stroke-width: 1;
-  stroke-dasharray: 3 6;
-}
-
-.chart-axis {
-  fill: var(--text-faint);
-  font-size: 11px;
-}
-
-.chart-month {
+.chart-switch {
+  margin-left: auto;
   font-weight: 600;
-}
-
-.chart-line {
-  stroke-width: 2.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 8px 12px var(--accent-glow));
-}
-
-.chart-dot {
-  fill: var(--surface);
-  stroke: var(--brand-1);
-  stroke-width: 2.2;
-  cursor: pointer;
-  transition: fill 0.15s ease;
-}
-
-.chart-dot:hover {
-  fill: var(--brand-1);
-  stroke: var(--surface);
-}
-
-.chart-tooltip {
-  position: fixed;
-  z-index: 50;
-  pointer-events: none;
-  min-width: 130px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--brand-1);
-  border-radius: 10px;
-  padding: 7px 12px;
-  box-shadow: var(--shadow-s);
-}
-
-.chart-tooltip p {
-  margin: 0;
-}
-
-.tip-title {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.tip-value {
-  font-size: 1rem;
-  font-weight: 750;
-  font-variant-numeric: tabular-nums;
 }
 
 /* Monthly table */
