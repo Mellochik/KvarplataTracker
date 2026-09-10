@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import MonthlyCost, Reading, Tariff
+from app.models import Reading, Tariff
 from app.services.calculator import TariffSet, calculate_month
 
 router = APIRouter(prefix="/api/export", tags=["export"])
@@ -48,15 +48,6 @@ async def _collect(db: AsyncSession) -> dict[str, tuple[list[str], list[list]]]:
         .all()
     )
 
-    notes: dict[int, str | None] = {}
-    if readings:
-        rows = await db.execute(
-            select(MonthlyCost.reading_id, MonthlyCost.note).where(
-                MonthlyCost.reading_id.in_([r.id for r in readings])
-            )
-        )
-        notes = dict(rows.all())
-
     # --- Показания счётчиков ---
     reading_headers = ["Период", "Год", "Месяц", "ХВС, м³", "ГВС, м³", "Электричество, кВт·ч"]
     reading_rows = [
@@ -88,7 +79,6 @@ async def _collect(db: AsyncSession) -> dict[str, tuple[list[str], list[list]]]:
         "Период", "Год", "Месяц",
         "Расход ХВС, м³", "Расход ГВС, м³", "Расход эл-ва, кВт·ч",
         "ХВС, ₽", "ГВС, ₽", "Эл-во, ₽", "Аренда, ₽", "Итого, ₽",
-        "Пометка",
     ]
     month_rows: list[list] = []
 
@@ -125,7 +115,6 @@ async def _collect(db: AsyncSession) -> dict[str, tuple[list[str], list[list]]]:
             calc.electric_cost,
             round(calc.rent, 2),
             calc.total,
-            notes.get(curr_r.id) or "",
         ])
 
     # --- Итоги по годам ---

@@ -176,7 +176,6 @@
                 <th>Эл-во, ₽</th>
                 <th>Аренда, ₽</th>
                 <th>Итого, ₽</th>
-                <th>Пометка</th>
               </tr>
             </thead>
             <tbody>
@@ -190,10 +189,9 @@
                 <td>{{ formatMoney(m.electric_cost) }}</td>
                 <td>{{ formatMoney(m.rent) }}</td>
                 <td class="cell-total">{{ formatMoney(m.total) }}</td>
-                <td>{{ m.note || '—' }}</td>
               </tr>
               <tr v-if="!summary.months.length">
-                <td colspan="10" class="table-empty">Нет данных за выбранный год</td>
+                <td colspan="9" class="table-empty">Нет данных за выбранный год</td>
               </tr>
             </tbody>
             <tfoot v-if="summary.months.length">
@@ -207,7 +205,6 @@
                 <td>{{ formatMoney(summary.total_electric_cost) }}</td>
                 <td>{{ formatMoney(summary.total_rent) }}</td>
                 <td class="cell-total">{{ formatMoney(summary.grand_total) }}</td>
-                <td></td>
               </tr>
             </tfoot>
           </table>

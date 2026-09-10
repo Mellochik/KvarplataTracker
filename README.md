@@ -38,6 +38,21 @@ npm run dev
 # http://localhost:5173 (проксирует /api на :8000)
 ```
 
+## Миграции БД
+
+Начальную схему приложение создаёт при старте (`create_all`), а последующие изменения схемы применяются через Alembic:
+
+```bash
+cd backend
+alembic upgrade head
+```
+
+В Docker:
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
 ## Структура
 
 ```
