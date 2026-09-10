@@ -12,7 +12,7 @@ class Tariff(Base):
     __tablename__ = "tariffs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    resource_type: Mapped[str] = mapped_column(String(20), nullable=False)  # hws, cws, electric
+    resource_type: Mapped[str] = mapped_column(String(20), nullable=False)  # xvs, gvs, electric
     rate: Mapped[float] = mapped_column(Float, nullable=False)
     effective_from: Mapped[date] = mapped_column(Date, nullable=False)
     effective_to: Mapped[date | None] = mapped_column(Date, nullable=True)
@@ -23,8 +23,8 @@ class Reading(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     period: Mapped[date] = mapped_column(Date, unique=True, nullable=False)
-    hws_value: Mapped[float] = mapped_column(Float, nullable=False)
-    cws_value: Mapped[float] = mapped_column(Float, nullable=False)
+    xvs_value: Mapped[float] = mapped_column(Float, nullable=False)
+    gvs_value: Mapped[float] = mapped_column(Float, nullable=False)
     electric_value: Mapped[float] = mapped_column(Float, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
@@ -36,8 +36,8 @@ class MonthlyCost(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     reading_id: Mapped[int] = mapped_column(Integer, ForeignKey("readings.id"), unique=True, nullable=False)
-    hws_cost: Mapped[float] = mapped_column(Float, nullable=False)
-    cws_cost: Mapped[float] = mapped_column(Float, nullable=False)
+    xvs_cost: Mapped[float] = mapped_column(Float, nullable=False)
+    gvs_cost: Mapped[float] = mapped_column(Float, nullable=False)
     electric_cost: Mapped[float] = mapped_column(Float, nullable=False)
     rent: Mapped[float] = mapped_column(Float, nullable=False)
     total: Mapped[float] = mapped_column(Float, nullable=False)

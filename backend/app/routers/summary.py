@@ -63,29 +63,29 @@ async def year_summary(year: int = Query(description="Расчётный год 
         curr = all_readings[i]
 
         tariff = TariffSet(
-            hws_rate=_rate_for(tariffs, "hws", curr.period),
-            cws_rate=_rate_for(tariffs, "cws", curr.period),
+            xvs_rate=_rate_for(tariffs, "xvs", curr.period),
+            gvs_rate=_rate_for(tariffs, "gvs", curr.period),
             electric_rate=_rate_for(tariffs, "electric", curr.period),
             rent=_rate_for(tariffs, "rent", curr.period),
         )
 
         calc = calculate_month(
-            current_hws=curr.hws_value,
-            current_cws=curr.cws_value,
+            current_xvs=curr.xvs_value,
+            current_gvs=curr.gvs_value,
             current_electric=curr.electric_value,
-            previous_hws=prev.hws_value,
-            previous_cws=prev.cws_value,
+            previous_xvs=prev.xvs_value,
+            previous_gvs=prev.gvs_value,
             previous_electric=prev.electric_value,
             tariff=tariff,
         )
 
         months.append(MonthlyCostRead(
             period=curr.period,
-            hws_consumption=calc.hws_consumption,
-            cws_consumption=calc.cws_consumption,
+            xvs_consumption=calc.xvs_consumption,
+            gvs_consumption=calc.gvs_consumption,
             electric_consumption=calc.electric_consumption,
-            hws_cost=calc.hws_cost,
-            cws_cost=calc.cws_cost,
+            xvs_cost=calc.xvs_cost,
+            gvs_cost=calc.gvs_cost,
             electric_cost=calc.electric_cost,
             rent=calc.rent,
             total=calc.total,
@@ -94,8 +94,8 @@ async def year_summary(year: int = Query(description="Расчётный год 
     return YearSummary(
         year=year,
         months=months,
-        total_hws_cost=round(sum(m.hws_cost for m in months), 2),
-        total_cws_cost=round(sum(m.cws_cost for m in months), 2),
+        total_xvs_cost=round(sum(m.xvs_cost for m in months), 2),
+        total_gvs_cost=round(sum(m.gvs_cost for m in months), 2),
         total_electric_cost=round(sum(m.electric_cost for m in months), 2),
         total_rent=round(sum(m.rent for m in months), 2),
         grand_total=round(sum(m.total for m in months), 2),

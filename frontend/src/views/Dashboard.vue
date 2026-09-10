@@ -142,11 +142,11 @@
             <tbody>
               <tr v-for="m in summary.months" :key="m.period">
                 <td class="month-cell">{{ formatMonth(m.period) }}</td>
-                <td>{{ m.hws_consumption.toFixed(2) }}</td>
-                <td>{{ m.cws_consumption.toFixed(2) }}</td>
+                <td>{{ m.xvs_consumption.toFixed(2) }}</td>
+                <td>{{ m.gvs_consumption.toFixed(2) }}</td>
                 <td>{{ m.electric_consumption.toFixed(0) }}</td>
-                <td>{{ formatMoney(m.hws_cost) }}</td>
-                <td>{{ formatMoney(m.cws_cost) }}</td>
+                <td>{{ formatMoney(m.xvs_cost) }}</td>
+                <td>{{ formatMoney(m.gvs_cost) }}</td>
                 <td>{{ formatMoney(m.electric_cost) }}</td>
                 <td>{{ formatMoney(m.rent) }}</td>
                 <td class="cell-total">{{ formatMoney(m.total) }}</td>
@@ -161,8 +161,8 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td>{{ formatMoney(summary.total_hws_cost) }}</td>
-                <td>{{ formatMoney(summary.total_cws_cost) }}</td>
+                <td>{{ formatMoney(summary.total_xvs_cost) }}</td>
+                <td>{{ formatMoney(summary.total_gvs_cost) }}</td>
                 <td>{{ formatMoney(summary.total_electric_cost) }}</td>
                 <td>{{ formatMoney(summary.total_rent) }}</td>
                 <td class="cell-total">{{ formatMoney(summary.grand_total) }}</td>
@@ -229,7 +229,7 @@ const avgMonthly = computed(() =>
 
 const utilitiesTotal = computed(() =>
   summary.value
-    ? summary.value.total_hws_cost + summary.value.total_cws_cost + summary.value.total_electric_cost
+    ? summary.value.total_xvs_cost + summary.value.total_gvs_cost + summary.value.total_electric_cost
     : 0
 )
 
@@ -241,13 +241,13 @@ const costPoints = computed(() =>
   }))
 )
 
-type ResourceKey = 'hws' | 'cws' | 'electric'
+type ResourceKey = 'xvs' | 'gvs' | 'electric'
 
 interface ResourceConfig {
   key: ResourceKey
   label: string
   fullLabel: string
-  field: 'hws_consumption' | 'cws_consumption' | 'electric_consumption'
+  field: 'xvs_consumption' | 'gvs_consumption' | 'electric_consumption'
   unit: string
   decimals: number
   colorFrom: string
@@ -257,20 +257,20 @@ interface ResourceConfig {
 // Display order and units follow the monthly table below.
 const RESOURCES: ResourceConfig[] = [
   {
-    key: 'hws',
+    key: 'xvs',
     label: 'ХВС',
     fullLabel: 'холодной воды',
-    field: 'hws_consumption',
+    field: 'xvs_consumption',
     unit: 'м³',
     decimals: 2,
     colorFrom: '#0284c7',
     colorTo: '#38bdf8',
   },
   {
-    key: 'cws',
+    key: 'gvs',
     label: 'ГВС',
     fullLabel: 'горячей воды',
-    field: 'cws_consumption',
+    field: 'gvs_consumption',
     unit: 'м³',
     decimals: 2,
     colorFrom: '#e11d48',
@@ -288,7 +288,7 @@ const RESOURCES: ResourceConfig[] = [
   },
 ]
 
-const selectedResource = ref<ResourceKey>('hws')
+const selectedResource = ref<ResourceKey>('xvs')
 const activeResource = computed(
   () => RESOURCES.find((r) => r.key === selectedResource.value) ?? RESOURCES[0]
 )

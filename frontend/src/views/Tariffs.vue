@@ -41,8 +41,8 @@
           <label>
             Ресурс
             <select v-model="form.resource_type">
-              <option value="hws">ХВС — холодная вода</option>
-              <option value="cws">ГВС — горячая вода</option>
+              <option value="xvs">ХВС — холодная вода</option>
+              <option value="gvs">ГВС — горячая вода</option>
               <option value="electric">Электричество</option>
               <option value="rent">Аренда</option>
             </select>
@@ -96,8 +96,8 @@ import { computed, onMounted, ref } from 'vue'
 import { api, type Tariff } from '../api'
 
 const resourceNames: Record<string, string> = {
-  hws: 'ХВС (холодная вода)',
-  cws: 'ГВС (горячая вода)',
+  xvs: 'ХВС (холодная вода)',
+  gvs: 'ГВС (горячая вода)',
   electric: 'Электричество',
   rent: 'Аренда',
 }
@@ -105,13 +105,13 @@ const resourceNames: Record<string, string> = {
 type Resource = Tariff['resource_type']
 
 const meta: Record<Resource, { name: string; unit: string; tone: string; icon: string }> = {
-  hws: {
+  xvs: {
     name: 'ХВС — холодная вода',
     unit: 'м³',
     tone: 'sky',
     icon: 'M12 2.7S6.5 8 6.5 13a5.5 5.5 0 0 0 11 0C17.5 8 12 2.7 12 2.7Z',
   },
-  cws: {
+  gvs: {
     name: 'ГВС — горячая вода',
     unit: 'м³',
     tone: 'rose',
@@ -168,7 +168,7 @@ function formatDate(value: string): string {
 }
 
 const form = ref({
-  resource_type: 'hws' as Resource,
+  resource_type: 'xvs' as Resource,
   rate: 0,
   effective_from: new Date().toISOString().slice(0, 10),
 })
