@@ -65,7 +65,6 @@ class MonthlyCostRead(BaseModel):
     electric_cost: float = Field(description="Стоимость электроэнергии за месяц")
     rent: float = Field(description="Стоимость аренды/наёма за месяц")
     total: float = Field(description="Итоговая стоимость за месяц (сумма всех составляющих)")
-    note: str | None = Field(default=None, description="Примечание к месяцу (может отсутствовать)")
 
 
 class YearSummary(BaseModel):

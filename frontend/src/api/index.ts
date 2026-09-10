@@ -26,7 +26,6 @@ export interface MonthlyCost {
   electric_cost: number
   rent: number
   total: number
-  note: string | null
 }
 
 export interface YearSummary {

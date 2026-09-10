@@ -41,6 +41,5 @@ class MonthlyCost(Base):
     electric_cost: Mapped[float] = mapped_column(Float, nullable=False)
     rent: Mapped[float] = mapped_column(Float, nullable=False)
     total: Mapped[float] = mapped_column(Float, nullable=False)
-    note: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     reading: Mapped["Reading"] = relationship(back_populates="cost")

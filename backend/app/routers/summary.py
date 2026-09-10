@@ -5,7 +5,7 @@ from sqlalchemy import extract, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import MonthlyCost, Reading, Tariff
+from app.models import Reading, Tariff
 from app.schemas import MonthlyCostRead, StatsRead, YearSummary
 from app.services.calculator import TariffSet, calculate_month
 
@@ -79,12 +79,6 @@ async def year_summary(year: int = Query(description="Расчётный год 
             tariff=tariff,
         )
 
-        # Note is stored per reading (from the import), carry it into the output
-        cost_result = await db.execute(
-            select(MonthlyCost.note).where(MonthlyCost.reading_id == curr.id)
-        )
-        note = cost_result.scalar_one_or_none()
-
         months.append(MonthlyCostRead(
             period=curr.period,
             hws_consumption=calc.hws_consumption,
@@ -95,7 +89,6 @@ async def year_summary(year: int = Query(description="Расчётный год 
             electric_cost=calc.electric_cost,
             rent=calc.rent,
             total=calc.total,
-            note=note,
         ))
 
     return YearSummary(
