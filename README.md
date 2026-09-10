@@ -40,17 +40,13 @@ npm run dev
 
 ## Миграции БД
 
-Начальную схему приложение создаёт при старте (`create_all`), а последующие изменения схемы применяются через Alembic:
+Начальную схему приложение создаёт при старте (`create_all`), а изменения схемы применяются через Alembic. В контейнере миграции запускаются автоматически перед стартом backend (`alembic upgrade head`).
+
+Локально без Docker:
 
 ```bash
 cd backend
 alembic upgrade head
-```
-
-В Docker:
-
-```bash
-docker compose exec backend alembic upgrade head
 ```
 
 ## Структура
