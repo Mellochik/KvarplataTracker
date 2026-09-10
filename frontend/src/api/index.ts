@@ -3,14 +3,14 @@ const API_BASE = '/api'
 export interface Reading {
   id: number
   period: string
-  hws_value: number
-  cws_value: number
+  xvs_value: number
+  gvs_value: number
   electric_value: number
 }
 
 export interface Tariff {
   id: number
-  resource_type: 'hws' | 'cws' | 'electric' | 'rent'
+  resource_type: 'xvs' | 'gvs' | 'electric' | 'rent'
   rate: number
   effective_from: string
   effective_to: string | null
@@ -18,11 +18,11 @@ export interface Tariff {
 
 export interface MonthlyCost {
   period: string
-  hws_consumption: number
-  cws_consumption: number
+  xvs_consumption: number
+  gvs_consumption: number
   electric_consumption: number
-  hws_cost: number
-  cws_cost: number
+  xvs_cost: number
+  gvs_cost: number
   electric_cost: number
   rent: number
   total: number
@@ -31,8 +31,8 @@ export interface MonthlyCost {
 export interface YearSummary {
   year: number
   months: MonthlyCost[]
-  total_hws_cost: number
-  total_cws_cost: number
+  total_xvs_cost: number
+  total_gvs_cost: number
   total_electric_cost: number
   total_rent: number
   grand_total: number
@@ -72,7 +72,7 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
-  updateReading: (id: number, data: { period: string; hws_value: number; cws_value: number; electric_value: number }) =>
+  updateReading: (id: number, data: { period: string; xvs_value: number; gvs_value: number; electric_value: number }) =>
     request<Reading>(`/readings/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

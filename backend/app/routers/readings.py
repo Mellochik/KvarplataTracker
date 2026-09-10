@@ -68,7 +68,7 @@ async def create_reading(payload: ReadingCreate, db: AsyncSession = Depends(get_
 @router.put(
     "/{reading_id}",
     response_model=ReadingRead,
-    description="Обновить показания счётчиков (период, поля ГВС, ХВС и электроэнергии) по идентификатору записи.",
+    description="Обновить показания счётчиков (период, поля ХВС, ГВС и электроэнергии) по идентификатору записи.",
     responses={
         404: {
             "description": "Запись показаний с указанным идентификатором не найдена",

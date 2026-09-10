@@ -20,8 +20,8 @@ XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.s
 
 # Имена такие же, как в интерфейсе приложения.
 RESOURCE_NAMES = {
-    "hws": "ХВС (холодная вода)",
-    "cws": "ГВС (горячая вода)",
+    "xvs": "ХВС (холодная вода)",
+    "gvs": "ГВС (горячая вода)",
     "electric": "Электричество",
     "rent": "Аренда",
 }
@@ -55,8 +55,8 @@ async def _collect(db: AsyncSession) -> dict[str, tuple[list[str], list[list]]]:
             r.period,
             r.period.year,
             _month_name(r.period),
-            round(r.hws_value, 3),
-            round(r.cws_value, 3),
+            round(r.xvs_value, 3),
+            round(r.gvs_value, 3),
             round(r.electric_value, 2),
         ]
         for r in readings
@@ -89,17 +89,17 @@ async def _collect(db: AsyncSession) -> dict[str, tuple[list[str], list[list]]]:
         curr_r = readings[i]
 
         tariff = TariffSet(
-            hws_rate=_rate_for(tariffs, "hws", curr_r.period),
-            cws_rate=_rate_for(tariffs, "cws", curr_r.period),
+            xvs_rate=_rate_for(tariffs, "xvs", curr_r.period),
+            gvs_rate=_rate_for(tariffs, "gvs", curr_r.period),
             electric_rate=_rate_for(tariffs, "electric", curr_r.period),
             rent=_rate_for(tariffs, "rent", curr_r.period),
         )
         calc = calculate_month(
-            current_hws=curr_r.hws_value,
-            current_cws=curr_r.cws_value,
+            current_xvs=curr_r.xvs_value,
+            current_gvs=curr_r.gvs_value,
             current_electric=curr_r.electric_value,
-            previous_hws=prev_r.hws_value,
-            previous_cws=prev_r.cws_value,
+            previous_xvs=prev_r.xvs_value,
+            previous_gvs=prev_r.gvs_value,
             previous_electric=prev_r.electric_value,
             tariff=tariff,
         )
@@ -107,11 +107,11 @@ async def _collect(db: AsyncSession) -> dict[str, tuple[list[str], list[list]]]:
             curr_r.period,
             curr_r.period.year,
             _month_name(curr_r.period),
-            round(calc.hws_consumption, 3),
-            round(calc.cws_consumption, 3),
+            round(calc.xvs_consumption, 3),
+            round(calc.gvs_consumption, 3),
             round(calc.electric_consumption, 2),
-            calc.hws_cost,
-            calc.cws_cost,
+            calc.xvs_cost,
+            calc.gvs_cost,
             calc.electric_cost,
             round(calc.rent, 2),
             calc.total,

@@ -35,11 +35,11 @@
           </label>
           <label>
             ХВС, м³
-            <input v-model.number="form.hws_value" type="number" step="0.001" min="0" required />
+            <input v-model.number="form.xvs_value" type="number" step="0.001" min="0" required />
           </label>
           <label>
             ГВС, м³
-            <input v-model.number="form.cws_value" type="number" step="0.001" min="0" required />
+            <input v-model.number="form.gvs_value" type="number" step="0.001" min="0" required />
           </label>
           <label>
             Электричество, кВт·ч
@@ -70,8 +70,8 @@
           <tbody>
             <tr v-for="r in readings" :key="r.id">
               <td class="period-cell">{{ formatPeriod(r.period) }}</td>
-              <td>{{ r.hws_value.toFixed(3) }}</td>
-              <td>{{ r.cws_value.toFixed(3) }}</td>
+              <td>{{ r.xvs_value.toFixed(3) }}</td>
+              <td>{{ r.gvs_value.toFixed(3) }}</td>
               <td>{{ r.electric_value.toFixed(1) }}</td>
               <td>
                 <button class="icon-btn" aria-label="Редактировать" title="Редактировать" @click="edit(r)">
@@ -129,8 +129,8 @@ function chooseYear(y: number) {
 
 const form = ref({
   period: new Date().toISOString().slice(0, 10),
-  hws_value: 0,
-  cws_value: 0,
+  xvs_value: 0,
+  gvs_value: 0,
   electric_value: 0,
 })
 
@@ -166,8 +166,8 @@ function edit(reading: Reading) {
   editingId.value = reading.id
   form.value = {
     period: reading.period,
-    hws_value: reading.hws_value,
-    cws_value: reading.cws_value,
+    xvs_value: reading.xvs_value,
+    gvs_value: reading.gvs_value,
     electric_value: reading.electric_value,
   }
   showForm.value = true
@@ -179,8 +179,8 @@ async function save() {
     if (editingId.value) {
       await api.updateReading(editingId.value, {
         period: form.value.period,
-        hws_value: form.value.hws_value,
-        cws_value: form.value.cws_value,
+        xvs_value: form.value.xvs_value,
+        gvs_value: form.value.gvs_value,
         electric_value: form.value.electric_value,
       })
     } else {
